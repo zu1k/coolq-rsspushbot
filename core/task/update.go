@@ -17,10 +17,7 @@ func Update() {
 				subs := model.GetSubscriberBySource(&source)
 				bot.BroadNews(&source, subs, c)
 			}
-			if source.ErrorCount >= config.ErrorThreshold {
-				bot.BroadSourceError(&source)
-			}
 		}
-		time.Sleep(time.Duration(1) * time.Minute)
+		time.Sleep(time.Duration(config.UpdateInterval) * time.Minute)
 	}
 }

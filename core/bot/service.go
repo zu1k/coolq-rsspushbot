@@ -2,29 +2,23 @@ package bot
 
 import (
 	"fmt"
-	"log"
-
-	"github.com/Tnze/CoolQ-Golang-SDK/v2/cqp"
 
 	"github.com/zu1k/coolq-pushbot/core/config"
 	"github.com/zu1k/coolq-pushbot/core/model"
 )
 
-func registFeed(qqnum int64, url string) {
-	cqp.SendPrivateMsg(qqnum, "处理中...")
+func registFeed(qqnum int64, url string, isGroup bool) {
+	SendMsg(qqnum, "处理中...", isGroup)
 	source, err := model.FindOrNewSourceByUrl(url)
 	if err != nil {
-		cqp.SendPrivateMsg(qqnum, fmt.Sprintf("%s，订阅失败", err))
+		SendMsg(qqnum, fmt.Sprintf("%s，订阅失败", err), isGroup)
 		return
 	}
-
-	err = model.RegistFeed(qqnum, source.ID)
-	log.Printf("%d subscribe [%d]%s %s", qqnum, source.ID, source.Title, source.Link)
-
+	err = model.RegistFeed(qqnum, source.ID, isGroup)
 	if err == nil {
-		cqp.SendPrivateMsg(qqnum, fmt.Sprintf("[%s](%s) 订阅成功", source.Title, source.Link))
+		SendMsg(qqnum, fmt.Sprintf("[%s](%s) 订阅成功", source.Title, source.Link), isGroup)
 	} else {
-		cqp.SendPrivateMsg(qqnum, "订阅失败")
+		SendMsg(qqnum, "订阅失败", isGroup)
 	}
 }
 
@@ -41,19 +35,9 @@ func BroadNews(source *model.Source, subs []model.Subscribe, contents []model.Co
 			}
 			msg, err := tpldata.Render()
 			if err != nil {
-				log.Println("BroadNews tpldata.Render err ", err)
-				cqp.SendPrivateMsg(1393385930, "Render error")
 				return
 			}
-			cqp.SendPrivateMsg(sub.UserID, msg)
+			SendMsg(sub.UserID, msg, sub.IsGroup)
 		}
-	}
-}
-
-func BroadSourceError(source *model.Source) {
-	subs := model.GetSubscriberBySource(source)
-	for _, sub := range subs {
-		message := fmt.Sprintf("[%s](%s) 已经累计连续%d次更新失败，暂时停止更新", source.Title, source.Link, config.ErrorThreshold)
-		cqp.SendPrivateMsg(sub.UserID, message)
 	}
 }

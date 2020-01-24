@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+
 	"github.com/zu1k/coolq-pushbot/core/config"
 )
 
@@ -12,9 +13,10 @@ type Subscribe struct {
 	EnableNotification int
 	EnableTelegraph    int
 	EditTime
+	IsGroup bool
 }
 
-func RegistFeed(userID int64, sourceID uint) error {
+func RegistFeed(userID int64, sourceID uint, isGroup bool) error {
 	var subscribe Subscribe
 	db := getConnect()
 	defer db.Close()
@@ -25,6 +27,7 @@ func RegistFeed(userID int64, sourceID uint) error {
 			subscribe.SourceID = sourceID
 			subscribe.EnableNotification = 1
 			subscribe.EnableTelegraph = 1
+			subscribe.IsGroup = isGroup
 			err := db.Create(&subscribe).Error
 			if err == nil {
 				return nil
